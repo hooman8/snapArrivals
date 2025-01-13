@@ -77,7 +77,47 @@ function getPresentFormattedCETTime() {
 
   return formattedTime;
 }
+import { formatInTimeZone } from "date-fns-tz";
 
+function adjustDateBasedOnTime(timeString) {
+  // Parse the time components, including milliseconds if present
+  const [timePart, msPart] = timeString.split(".");
+  const [hours, minutes, seconds] = timePart.split(":").map(Number);
+  const milliseconds = msPart ? parseInt(msPart, 10) : 0;
+
+  const timeZone = "Europe/Paris"; // CET timezone
+
+  // Get the current CET date
+  const now = new Date();
+  const todayInCET = new Date(
+    formatInTimeZone(now, timeZone, "yyyy-MM-dd'T00:00:00XXX")
+  );
+
+  // Adjust for AM or PM
+  let adjustedDate = new Date(todayInCET);
+  if (hours < 12) {
+    // AM: Move to tomorrow
+    adjustedDate.setDate(todayInCET.getDate() + 1);
+  }
+
+  // Construct the final date by setting the time components explicitly
+  adjustedDate = new Date(
+    adjustedDate.getFullYear(),
+    adjustedDate.getMonth(),
+    adjustedDate.getDate(),
+    hours,
+    minutes,
+    seconds || 0,
+    milliseconds
+  );
+
+  // Format the final date in CET
+  return formatInTimeZone(adjustedDate, timeZone, "yyyy-MM-dd HH:mm:ssXXX");
+}
+
+// Example Usage
+console.log(adjustDateBasedOnTime("19:43:57.128")); // Should correctly return today's date in CET with the supplied time
+console.log(adjustDateBasedOnTime("08:43:57.128")); // Should correctly return tomorrow's date in CET with the supplied time
 // Example Usage
 const currentTime = getPresentFormattedCETTime();
 const arrivalTime = getRandomMorningTimeCET();
