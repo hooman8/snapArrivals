@@ -97,23 +97,33 @@ function getPresentFormattedCETTime() {
   return formattedTime;
 }
 
-function adjustDateBasedOnTime(timeString) {
+function adjustDateBasedOnTime(timeString, baseDateString) {
+  // Use today's date if no baseDateString is provided
+  let year, month, day;
+  if (baseDateString) {
+    // Parse the provided date (e.g., 20250113)
+    year = parseInt(baseDateString.slice(0, 4), 10);
+    month = parseInt(baseDateString.slice(4, 6), 10) - 1; // Month is zero-based
+    day = parseInt(baseDateString.slice(6, 8), 10);
+  } else {
+    // Default to today's date
+    const now = new Date();
+    year = now.getUTCFullYear();
+    month = now.getUTCMonth();
+    day = now.getUTCDate();
+  }
+
   // Parse the time components, including milliseconds if present
   const [timePart, msPart] = timeString.split(".");
   const [hours, minutes, seconds] = timePart.split(":").map(Number);
   const milliseconds = msPart ? parseInt(msPart, 10) : 0;
 
-  // Get the current date
-  const now = new Date();
-
-  // Create a new Date object in UTC
-  const adjustedDate = new Date(
-    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-  );
+  // Create a new Date object for the base date
+  const adjustedDate = new Date(Date.UTC(year, month, day));
 
   // Adjust for AM or PM
   if (hours < 12) {
-    // AM: Move to tomorrow
+    // AM: Move to the next day
     adjustedDate.setUTCDate(adjustedDate.getUTCDate() + 1);
   }
 
@@ -128,16 +138,5 @@ function adjustDateBasedOnTime(timeString) {
   return formattedDate;
 }
 
-// Example Usage
-console.log(adjustDateBasedOnTime("19:43:57.128")); // Should correctly return today's date in CET with the supplied time
-console.log(adjustDateBasedOnTime("08:43:57.128")); // Should correctly return tomorrow's date in CET with the supplied time
-// Example Usage
-const currentTime = getPresentFormattedCETTime();
-const arrivalTime = getRandomMorningTimeCET();
-
-console.log("Current Time:", currentTime);
-console.log("Yesterday's Random PM Time:", getRandomPMTimePreviousDayCET());
-console.log("Tomorrow's morning Random time:", arrivalTime);
-
-console.log(isLate(currentTime, arrivalTime));
-console.log(isLate(currentTime, getRandomPMTimePreviousDayCET()));
+console.log(adjustDateBasedOnTime("19:43:57.128", "20250113")); // Should return 2025-01-13 with PM time
+console.log(adjustDateBasedOnTime("07:30:00", "20250113")); // Should return 2025-01-14 with AM time
