@@ -98,14 +98,10 @@ function adjustDateBasedOnTime(timeString) {
     adjustedDate.setUTCDate(adjustedDate.getUTCDate() + 1);
   }
 
-  // Apply the time components
+  // Apply the time components directly in UTC
   adjustedDate.setUTCHours(hours, minutes, seconds || 0, milliseconds);
 
-  // Convert UTC date to CET offset (+1 for standard time, +2 for daylight saving time)
-  const CET_OFFSET = 1; // Change to 2 if testing during DST
-  adjustedDate.setHours(adjustedDate.getHours() + CET_OFFSET);
-
-  // Format the final date
+  // Format the final date with a fixed CET offset (+1)
   const formattedDate = adjustedDate
     .toISOString()
     .replace("T", " ")
