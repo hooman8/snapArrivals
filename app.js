@@ -77,7 +77,6 @@ function getPresentFormattedCETTime() {
 
   return formattedTime;
 }
-import { formatInTimeZone } from "date-fns-tz";
 
 function adjustDateBasedOnTime(timeString) {
   // Parse the time components, including milliseconds if present
@@ -85,34 +84,33 @@ function adjustDateBasedOnTime(timeString) {
   const [hours, minutes, seconds] = timePart.split(":").map(Number);
   const milliseconds = msPart ? parseInt(msPart, 10) : 0;
 
-  const timeZone = "Europe/Paris"; // CET timezone
-
-  // Get the current CET date
+  // Get the current date
   const now = new Date();
-  const todayInCET = new Date(
-    formatInTimeZone(now, timeZone, "yyyy-MM-dd'T00:00:00XXX")
+
+  // Create a new Date object in UTC
+  const adjustedDate = new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
   );
 
   // Adjust for AM or PM
-  let adjustedDate = new Date(todayInCET);
   if (hours < 12) {
     // AM: Move to tomorrow
-    adjustedDate.setDate(todayInCET.getDate() + 1);
+    adjustedDate.setUTCDate(adjustedDate.getUTCDate() + 1);
   }
 
-  // Construct the final date by setting the time components explicitly
-  adjustedDate = new Date(
-    adjustedDate.getFullYear(),
-    adjustedDate.getMonth(),
-    adjustedDate.getDate(),
-    hours,
-    minutes,
-    seconds || 0,
-    milliseconds
-  );
+  // Apply the time components
+  adjustedDate.setUTCHours(hours, minutes, seconds || 0, milliseconds);
 
-  // Format the final date in CET
-  return formatInTimeZone(adjustedDate, timeZone, "yyyy-MM-dd HH:mm:ssXXX");
+  // Convert UTC date to CET offset (+1 for standard time, +2 for daylight saving time)
+  const CET_OFFSET = 1; // Change to 2 if testing during DST
+  adjustedDate.setHours(adjustedDate.getHours() + CET_OFFSET);
+
+  // Format the final date
+  const formattedDate = adjustedDate
+    .toISOString()
+    .replace("T", " ")
+    .replace("Z", "+01:00");
+  return formattedDate;
 }
 
 // Example Usage
