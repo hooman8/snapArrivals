@@ -30,11 +30,30 @@ function getRandomPMTimePreviousDayCET() {
 }
 
 function isLate(currentTime, arrivalTime) {
-  const timeZone = "Europe/Paris";
+  // Helper function to parse time strings and convert to a Date in CET
+  function parseToCET(timeString) {
+    const [hours, minutes, seconds] = timeString.split(":").map(Number);
+    const now = new Date();
 
-  // Parse the time strings into Date objects
-  const currentTimeInCET = toZonedTime(parseISO(currentTime), timeZone);
-  const arrivalTimeInCET = toZonedTime(parseISO(arrivalTime), timeZone);
+    // Create a new Date object and set the time components
+    const cetDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes,
+      seconds || 0
+    );
+
+    // Adjust the time to CET offset (UTC+1)
+    cetDate.setHours(cetDate.getHours() - cetDate.getTimezoneOffset() / 60 + 1);
+
+    return cetDate;
+  }
+
+  // Convert both times to CET Date objects
+  const currentTimeInCET = parseToCET(currentTime);
+  const arrivalTimeInCET = parseToCET(arrivalTime);
 
   // Compare the times
   if (currentTimeInCET > arrivalTimeInCET) {
