@@ -3,31 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bulma Modal Example</title>
+    <title>Consistent Modal Implementation</title>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
     />
   </head>
   <body>
-    <!-- Trigger element -->
-    <button
-      class="button is-primary js-modal-trigger"
-      data-target="example-modal"
-    >
-      Open Modal
-    </button>
+    <!-- List -->
+    <ul id="dynamic-list"></ul>
 
-    <!-- Modal -->
-    <div class="modal" id="example-modal">
+    <!-- Shared Modal -->
+    <div class="modal" id="shared-modal">
       <div class="modal-background"></div>
       <div class="modal-card">
         <header class="modal-card-head">
-          <p class="modal-card-title">Modal Title</p>
+          <p class="modal-card-title" id="modal-title">Default Title</p>
           <button class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
-          This is the content of the modal.
+          <p id="modal-content">Default content goes here.</p>
         </section>
         <footer class="modal-card-foot">
           <button class="button is-success">Save</button>
@@ -37,8 +32,9 @@
     </div>
 
     <script>
-      // Paste the implementation script here
+      // Original implementation
       document.addEventListener("DOMContentLoaded", () => {
+        // Functions to open and close a modal
         function openModal($el) {
           $el.classList.add("is-active");
         }
@@ -53,10 +49,11 @@
           });
         }
 
+        // Add a click event on buttons to open a specific modal
         (document.querySelectorAll(".js-modal-trigger") || []).forEach(
           ($trigger) => {
-            const modal = $trigger.dataset.target;
-            const $target = document.getElementById(modal);
+            const modalId = $trigger.dataset.target;
+            const $target = document.getElementById(modalId);
 
             $trigger.addEventListener("click", () => {
               openModal($target);
@@ -64,6 +61,7 @@
           }
         );
 
+        // Add a click event on various child elements to close the parent modal
         (
           document.querySelectorAll(
             ".modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button"
@@ -76,11 +74,63 @@
           });
         });
 
+        // Add a keyboard event to close all modals
         document.addEventListener("keydown", (event) => {
           if (event.key === "Escape") {
             closeAllModals();
           }
         });
+
+        // Function to create dynamic list items
+        function createListItems(data) {
+          const ul = document.getElementById("dynamic-list");
+
+          // Clear existing items
+          ul.innerHTML = "";
+
+          // Create list items dynamically
+          data.forEach((item) => {
+            const li = document.createElement("li");
+            li.textContent = item.text;
+            li.classList.add("js-modal-trigger"); // Add trigger class
+            li.dataset.target = "shared-modal"; // Set data-target attribute for the modal
+            li.style.cursor = "pointer";
+
+            // Append the `li` to the list
+            ul.appendChild(li);
+          });
+
+          // Rebind modal triggers for dynamically added elements
+          (document.querySelectorAll(".js-modal-trigger") || []).forEach(
+            ($trigger) => {
+              const modalId = $trigger.dataset.target;
+              const $target = document.getElementById(modalId);
+
+              $trigger.addEventListener("click", () => {
+                const modalTitle = document.getElementById("modal-title");
+                const modalContent = document.getElementById("modal-content");
+
+                // Update modal content dynamically
+                modalTitle.textContent =
+                  "Dynamic Title for " + $trigger.textContent;
+                modalContent.textContent =
+                  "Dynamic content for " + $trigger.textContent;
+
+                openModal($target);
+              });
+            }
+          );
+        }
+
+        // Example data
+        const exampleData = [
+          { text: "Item 1" },
+          { text: "Item 2" },
+          { text: "Item 3" },
+        ];
+
+        // Call the function to create list items
+        createListItems(exampleData);
       });
     </script>
   </body>
