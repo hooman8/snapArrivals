@@ -1,6 +1,40 @@
 import { format, toZonedTime } from "date-fns-tz";
 import { parseISO } from "date-fns";
 
+const deleteAllSearchTerms = async (term) => {
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction("searchTerms", "readwrite");
+    const store = transaction.objectStore("searchTerms");
+
+    const request = store.openCursor();
+
+    let deleteCount = 0; // Track how many records are deleted
+
+    request.onsuccess = (event) => {
+      const cursor = event.target.result;
+
+      if (cursor) {
+        if (cursor.value === term) {
+          cursor.delete(); // Delete the current record
+          deleteCount++; // Increment the count of deleted records
+          console.log(`Deleted one occurrence of "${term}"`);
+        }
+        cursor.continue(); // Continue to the next record
+      } else {
+        console.log(`All occurrences of "${term}" deleted`);
+        resolve(deleteCount); // Resolve with the count of deleted records
+      }
+    };
+
+    request.onerror = (event) => {
+      console.error("Error searching for term:", event.target.error);
+      reject("Error deleting search terms");
+    };
+  });
+};
+
 function getRandomPMTimePreviousDayCET() {
   // Current date
   const now = new Date();
