@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulma Card Modal</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+  </head>
+  <body>
+    <!-- Trigger button -->
+    <button class="button is-primary" id="open-modal">Open Card Modal</button>
+
+    <!-- Modal -->
+    <div class="modal" id="card-modal">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <!-- Card -->
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">Card Modal Title</p>
+            <button class="delete" aria-label="close" id="close-modal"></button>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              This is the content inside the card modal. You can include any
+              information here.
+            </div>
+          </div>
+          <footer class="card-footer">
+            <a href="#" class="card-footer-item">Save</a>
+            <a href="#" class="card-footer-item">Cancel</a>
+          </footer>
+        </div>
+      </div>
+      <button
+        class="modal-close is-large"
+        aria-label="close"
+        id="close-modal-bg"
+      ></button>
+    </div>
+
+    <script>
+      // JavaScript to handle modal open/close
+      const modal = document.getElementById("card-modal");
+      const openModal = document.getElementById("open-modal");
+      const closeModal = document.getElementById("close-modal");
+      const closeModalBg = document.getElementById("close-modal-bg");
+
+      openModal.addEventListener("click", () => {
+        modal.classList.add("is-active");
+      });
+
+      closeModal.addEventListener("click", () => {
+        modal.classList.remove("is-active");
+      });
+
+      closeModalBg.addEventListener("click", () => {
+        modal.classList.remove("is-active");
+      });
+    </script>
+  </body>
+</html>
