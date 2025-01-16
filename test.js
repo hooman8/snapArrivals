@@ -1,3 +1,23 @@
+// Helper function to format content
+function formatContent(items) {
+  if (!items || items.length === 0) {
+    return "<p>No items available.</p>";
+  }
+
+  // Generate a list of items
+  const listItems = items
+    .map(
+      (item) => `
+        <div class="item">
+          <h4>${item.name}</h4>
+          <p>${item.description || "No description available."}</p>
+        </div>
+      `
+    )
+    .join("");
+
+  return `<div class="items-list">${listItems}</div>`;
+}
 function createListWithModal(data) {
   const ul = document.getElementById("dynamic-list");
 
