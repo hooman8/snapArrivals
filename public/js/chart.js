@@ -33,15 +33,11 @@ const config = {
           text: "Time (HH:MM)",
         },
         ticks: {
+          stepSize: 10, // Define step size in minutes (e.g., 10-minute intervals)
           callback: function (value) {
-            // Round the value to the nearest integer (minutes)
-            const roundedValue = Math.round(value);
-
-            // Convert minutes to HH:MM format
-            const hours = Math.floor(roundedValue / 60);
-            const minutes = roundedValue % 60;
-
-            // Format as "HH:MM"
+            // Convert minutes back to HH:MM format
+            const hours = Math.floor(value / 60);
+            const minutes = value % 60;
             return `${hours.toString().padStart(2, "0")}:${minutes
               .toString()
               .padStart(2, "0")}`;
@@ -59,10 +55,12 @@ const config = {
       tooltip: {
         callbacks: {
           label: function (context) {
-            // Convert minutes back to HH:MM format for tooltip
-            const minutes = context.raw;
+            // Convert raw data (minutes) back to HH:MM for tooltips
+            const minutes = Math.round(context.raw); // Round the value
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
+
+            // Format tooltip label as "HH:MM"
             return `Time: ${hours.toString().padStart(2, "0")}:${mins
               .toString()
               .padStart(2, "0")}`;
