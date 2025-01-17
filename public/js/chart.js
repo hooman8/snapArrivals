@@ -2,7 +2,7 @@
 const labels = ["2025-01-01", "2025-01-02", "2025-01-03"];
 
 // Data: Times
-const timeStrings = ["22:15", "22:42", "22:30"];
+const timeStrings = ["19:32", "19:31", "19:32"];
 
 // Convert times to total minutes past midnight for internal representation
 const timeInMinutes = timeStrings.map((time) => {
@@ -34,9 +34,14 @@ const config = {
         },
         ticks: {
           callback: function (value) {
-            // Convert minutes back to HH:MM format for y-axis ticks
-            const hours = Math.floor(value / 60);
-            const minutes = value % 60;
+            // Round the value to the nearest integer (minutes)
+            const roundedValue = Math.round(value);
+
+            // Convert minutes to HH:MM format
+            const hours = Math.floor(roundedValue / 60);
+            const minutes = roundedValue % 60;
+
+            // Format as "HH:MM"
             return `${hours.toString().padStart(2, "0")}:${minutes
               .toString()
               .padStart(2, "0")}`;
