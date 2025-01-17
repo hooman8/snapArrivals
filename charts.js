@@ -40,13 +40,17 @@ function createListWithModal(data) {
           '<canvas id="chartCanvas" width="400" height="400"></canvas>';
 
         // Prepare data for Chart.js
-        const labels = details.data.map((entry) => entry.value);
-        const timestamps = details.data.map((entry) =>
-          new Date(entry.timestamp).toLocaleString()
-        );
+        const labels = details.data.map((entry) => entry.date); // Dates for x-axis
+        const timeStrings = details.data.map((entry) => entry.time); // Times as strings
 
-        // Render Chart.js line chart with timestamps on the y-axis
-        renderLineChart("chartCanvas", labels, timestamps);
+        // Convert times to minutes for calculations
+        const timeInMinutes = timeStrings.map((time) => {
+          const [hours, minutes] = time.split(":").map(Number);
+          return hours * 60 + minutes;
+        });
+
+        // Render the chart
+        renderLineChart("chartCanvas", labels, timeInMinutes);
       } catch (error) {
         modalTitle.textContent = "Error";
         modalContent.innerHTML = "<p>Failed to load chart data.</p>";
@@ -59,45 +63,59 @@ function createListWithModal(data) {
 }
 
 // Function to render line chart using Chart.js
-function renderLineChart(canvasId, data, labels) {
+function renderLineChart(canvasId, labels, data) {
   const ctx = document.getElementById(canvasId).getContext("2d");
   new Chart(ctx, {
     type: "line",
     data: {
-      labels: labels, // Timestamps as Y-axis labels
+      labels: labels, // Dates as labels on the x-axis
       datasets: [
         {
-          label: "Values Over Time",
-          data: data, // Values as X-axis data
+          label: "Time",
+          data: data, // Time in minutes for calculations
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
-          borderWidth: 2,
+          tension: 0.4, // Smooth the curve
         },
       ],
     },
     options: {
-      indexAxis: "y", // Flip the axes to have timestamps on the Y-axis
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top",
-        },
-        tooltip: {
-          mode: "index",
-          intersect: false,
-        },
-      },
       scales: {
-        x: {
-          title: {
-            display: true,
-            text: "Value",
-          },
-        },
         y: {
           title: {
             display: true,
-            text: "Timestamp",
+            text: "Time (HH:MM)",
+          },
+          ticks: {
+            callback: function (value) {
+              // Convert minutes back to HH:MM format for y-axis ticks
+              const hours = Math.floor(value / 60);
+              const minutes = value % 60;
+              return `${hours.toString().padStart(2, "0")}:${minutes
+                .toString()
+                .padStart(2, "0")}`;
+            },
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Date",
+          },
+        },
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              // Convert minutes back to HH:MM format for tooltips
+              const minutes = context.raw;
+              const hours = Math.floor(minutes / 60);
+              const mins = minutes % 60;
+              return `Time: ${hours.toString().padStart(2, "0")}:${mins
+                .toString()
+                .padStart(2, "0")}`;
+            },
           },
         },
       },
