@@ -1,6 +1,6 @@
-const { Temporal } = require("@js-temporal/polyfill");
+import { Temporal } from "@js-temporal/polyfill";
 
-// Example timestamps
+// Example timestamps in CET
 const timestamps = [
   "2025-01-15T08:45:00+01:00[Europe/Berlin]",
   "2025-01-15T08:55:00+01:00[Europe/Berlin]",
@@ -9,37 +9,41 @@ const timestamps = [
   "2025-01-15T09:25:00+01:00[Europe/Berlin]",
 ];
 
-// Step 1: Extract intervals (in minutes) between arrivals
-const intervals = [];
+// Step 1: Convert timestamps to Temporal.PlainTime
 const times = timestamps.map((ts) =>
   Temporal.ZonedDateTime.from(ts).toPlainTime()
 );
+
+// Step 2: Calculate intervals (in minutes) between consecutive times
+const intervals = [];
 for (let i = 1; i < times.length; i++) {
-  intervals.push(times[i - 1].until(times[i]).total("minutes"));
+  const diff = times[i - 1].until(times[i]).total("minutes");
+  intervals.push(diff);
 }
 
-// Step 2: Simulate a KNN prediction (simple average of nearest intervals)
+// Step 3: Define KNN parameters
 const k = 3; // Number of neighbors
-const targetTime = Temporal.PlainTime.from("09:00:00"); // Example target time
+const mostRecentTime = times[times.length - 1]; // Last recorded time
 
-// Compute distances from target time
-const distances = times.map((time) => ({
-  time,
-  distance: Math.abs(targetTime.until(time).total("minutes")),
+// Step 4: Compute distances from the most recent time
+const distances = times.slice(0, -1).map((time, index) => ({
+  index,
+  distance: Math.abs(mostRecentTime.until(time).total("minutes")),
 }));
 
-// Sort by distance and take the nearest k neighbors
+// Step 5: Sort by distance and find the nearest neighbors
 distances.sort((a, b) => a.distance - b.distance);
 const nearestNeighbors = distances.slice(0, k);
 
-// Predict the next interval based on the average of nearest intervals
+// Step 6: Predict the next interval using the average of the nearest neighbors
 const predictedInterval =
-  nearestNeighbors.reduce((sum, neighbor, index) => {
-    if (index < k - 1) {
-      const idx = times.indexOf(neighbor.time);
-      return sum + intervals[idx];
-    }
-    return sum;
+  nearestNeighbors.reduce((sum, neighbor) => {
+    return sum + intervals[neighbor.index];
   }, 0) / k;
 
-console.log(`Predicted interval: ${predictedInterval} minutes`);
+// Step 7: Predict the next arrival time
+const nextArrival = mostRecentTime.add({ minutes: predictedInterval });
+
+console.log(`Most Recent Time: ${mostRecentTime.toString()}`);
+console.log(`Predicted Interval: ${predictedInterval.toFixed(2)} minutes`);
+console.log(`Next Arrival Time: ${nextArrival.toString()}`);
