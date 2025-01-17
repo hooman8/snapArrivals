@@ -1,4 +1,4 @@
-import { Temporal } from "@js-temporal/polyfill";
+const { Temporal } = require("@js-temporal/polyfill");
 
 // Example timestamps in CET
 const timestamps = [
@@ -9,41 +9,46 @@ const timestamps = [
   "2025-01-15T09:25:00+01:00[Europe/Berlin]",
 ];
 
-// Step 1: Convert timestamps to Temporal.PlainTime
+// Convert timestamps to Temporal.PlainTime
 const times = timestamps.map((ts) =>
   Temporal.ZonedDateTime.from(ts).toPlainTime()
 );
 
-// Step 2: Calculate intervals (in minutes) between consecutive times
+// Calculate intervals between consecutive times
 const intervals = [];
 for (let i = 1; i < times.length; i++) {
   const diff = times[i - 1].until(times[i]).total("minutes");
   intervals.push(diff);
 }
 
-// Step 3: Define KNN parameters
+// Target time for prediction
+const mostRecentTime = times[times.length - 1];
 const k = 3; // Number of neighbors
-const mostRecentTime = times[times.length - 1]; // Last recorded time
 
-// Step 4: Compute distances from the most recent time
+// Compute distances and sort neighbors
 const distances = times.slice(0, -1).map((time, index) => ({
   index,
-  distance: Math.abs(mostRecentTime.until(time).total("minutes")),
+  distance: Math.abs(mostRecentTime.until(time).total("minutes")), // Use absolute difference
 }));
 
-// Step 5: Sort by distance and find the nearest neighbors
 distances.sort((a, b) => a.distance - b.distance);
+
+// Select nearest neighbors
 const nearestNeighbors = distances.slice(0, k);
 
-// Step 6: Predict the next interval using the average of the nearest neighbors
+// Predict the interval using the average of the nearest neighbors
 const predictedInterval =
   nearestNeighbors.reduce((sum, neighbor) => {
-    return sum + intervals[neighbor.index];
+    const idx = neighbor.index;
+    return idx >= 0 ? sum + intervals[idx] : sum;
   }, 0) / k;
 
-// Step 7: Predict the next arrival time
-const nextArrival = mostRecentTime.add({ minutes: predictedInterval });
+// Ensure the interval is rounded to avoid unsupported fractional values
+const roundedInterval = Math.round(predictedInterval);
+
+// Predict the next arrival time
+const nextArrival = mostRecentTime.add({ minutes: roundedInterval });
 
 console.log(`Most Recent Time: ${mostRecentTime.toString()}`);
-console.log(`Predicted Interval: ${predictedInterval.toFixed(2)} minutes`);
+console.log(`Predicted Interval: ${roundedInterval} minutes`);
 console.log(`Next Arrival Time: ${nextArrival.toString()}`);
