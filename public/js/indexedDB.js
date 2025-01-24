@@ -1,3 +1,34 @@
+const deleteFirstSearchTerm = async () => {
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction("searchTerms", "readwrite");
+    const store = transaction.objectStore("searchTerms");
+
+    const request = store.openCursor(); // Open a cursor to find the first record
+
+    request.onsuccess = (event) => {
+      const cursor = event.target.result;
+
+      if (cursor) {
+        cursor.delete(); // Delete the first record
+        console.log("First search term deleted successfully:", cursor.value);
+        resolve(cursor.value); // Resolve with the deleted record value
+      } else {
+        console.log("No search terms found to delete.");
+        resolve(null); // No records found
+      }
+    };
+
+    request.onerror = (event) => {
+      console.error(
+        "Error deleting the first search term:",
+        event.target.error
+      );
+      reject("Error deleting the first search term");
+    };
+  });
+};
 const countAllSearchTerms = async () => {
   const db = await openDatabase();
 
