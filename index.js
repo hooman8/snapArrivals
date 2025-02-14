@@ -15,8 +15,13 @@ app.use(
     path.join(__dirname, "node_modules/chartjs-adapter-date-fns/dist")
   )
 );
+app.use(
+  "/js",
+  express.static(path.join(__dirname, "node_modules/@kurkle/color/dist"))
+);
 
 app.use(express.static("public"));
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
